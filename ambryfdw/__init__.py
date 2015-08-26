@@ -62,6 +62,15 @@ import msgpack
 from multicorn import ForeignDataWrapper
 from multicorn.utils import log_to_postgres, ERROR, WARNING
 
+# Note:
+#    date and time formats listed here have to match to formats used in the
+#    ambry.etl.partition.PartitionMsgpackDataFileReader.decode_obj
+
+DATETIME_FORMAT_WITH_MS = '%Y-%m-%dT%H:%M:%S'
+DATETIME_FORMAT_NO_MS = '%Y-%m-%dT%H:%M:%S.%f'
+TIME_FORMAT = '%H:%M:%S'
+DATE_FORMAT = '%Y-%m-%d'
+
 QUAL_OPERATOR_MAP = {
     '>': operator.gt,
     '<': operator.lt,
@@ -86,17 +95,17 @@ class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
         if b'__datetime__' in obj:
             # FIXME: not tested
             try:
-                obj = datetime.strptime(obj['as_str'], '%Y-%m-%dT%H:%M:%S')
+                obj = datetime.strptime(obj['as_str'], DATETIME_FORMAT_WITH_MS)
             except ValueError:
                 # The preferred format is without the microseconds, but there are some lingering
                 # bundle that still have it.
-                obj = datetime.datetime.strptime(obj['as_str'], '%Y-%m-%dT%H:%M:%S.%f')
+                obj = datetime.datetime.strptime(obj['as_str'], DATETIME_FORMAT_NO_MS)
         elif b'__time__' in obj:
             # FIXME: not tested
-            obj = time(*list(time.strptime(obj['as_str'], '%H:%M:%S'))[3:6])
+            obj = time(*list(time.strptime(obj['as_str'], TIME_FORMAT))[3:6])
         elif b'__date__' in obj:
             # FIXME: not tested
-            obj = datetime.datetime.strptime(obj['as_str'], '%Y-%m-%d').date()
+            obj = datetime.datetime.strptime(obj['as_str'], DATE_FORMAT).date()
         else:
             # FIXME: not tested
             raise Exception('Unknown type on decode: {} '.format(obj))
