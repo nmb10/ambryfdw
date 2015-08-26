@@ -3,12 +3,8 @@
 Purpose
 -------
 
-This fdw can be used to access data stored in `CSV files`_. Each column defined
-in the table will be mapped, in order, against columns in the CSV file.
-
-.. api_compat:: :read:
-
-.. _CSV files: http://en.wikipedia.org/wiki/Comma-separated_values
+This fdw can be used to access data stored in the ambry partitions packed with msgpack. Each column defined
+in the table will be mapped, in order, against columns in the ambry partition file.
 
 Dependencies
 ------------
@@ -22,19 +18,10 @@ Options
   The full path to the CSV file containing the data. This file must be readable
   to the postgres user.
 
-``delimiter``
-  The CSV delimiter (defaults to  ``,``).
-
-``quotechar``
-  The CSV quote character (defaults to ``"``).
-
-``skip_header``
-  The number of lines to skip (defaults to ``0``).
-
 Usage example
 -------------
 
-Supposing you want to parse the following CSV file, located in ``/tmp/test.csv``::
+Supposing you want to parse the following msgpack partition file, located in ``/tmp/test.msg``::
 
     Year,Make,Model,Length
     1997,Ford,E350,2.34
@@ -44,22 +31,19 @@ You can declare the following table:
 
 .. code-block:: sql
 
-    CREATE SERVER csv_srv foreign data wrapper multicorn options (
-        wrapper 'multicorn.csvfdw.CsvFdw'
+    CREATE SERVER partition_srv foreign data wrapper multicorn options (
+        wrapper 'ambryfdw.PartitionMsgpackForeignDataWrapper'
     );
 
-
-    create foreign table csvtest (
+    create foreign table partition_test (
            year numeric,
            make character varying,
            model character varying,
            length numeric
-    ) server csv_srv options (
-           filename '/tmp/test.csv',
-           skip_header '1',
-           delimiter ',');
+    ) server partition_srv options (
+           filename '/tmp/test.msg');
 
-    select * from csvtest;
+    select * from partition_test;
 
 .. code-block:: bash
 
@@ -69,14 +53,14 @@ You can declare the following table:
      2000 | Mercury | Cougar |   2.38
     (2 lines)
 
-
 """
+
+from datetime import datetime, time
 
 import msgpack
 
 from multicorn import ForeignDataWrapper
-from multicorn.utils import log_to_postgres, ERROR, WARNING
-from datetime import datetime, time
+from multicorn.utils import log_to_postgres, ERROR
 
 
 class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
