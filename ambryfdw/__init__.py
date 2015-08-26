@@ -1,4 +1,3 @@
-# FIXME:
 """
 Purpose
 -------
@@ -56,11 +55,17 @@ You can declare the following table:
 """
 
 from datetime import datetime, time
+import operator
 
 import msgpack
 
 from multicorn import ForeignDataWrapper
-from multicorn.utils import log_to_postgres, ERROR
+from multicorn.utils import log_to_postgres, ERROR, WARNING
+
+QUAL_OPERATOR_MAP = {
+    '>': operator.gt,
+    '<': operator.lt,
+}
 
 
 class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
@@ -97,6 +102,31 @@ class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
             raise Exception('Unknown type on decode: {} '.format(obj))
         return obj
 
+    def _matches(self, quals, row):
+        """ Returns True if row matches to all quals. Otherwise returns False.
+
+        Args:
+            quals (list of Qual):
+            row (list or tuple):
+
+        Returns:
+            bool: True if row matches to all quals, False otherwise.
+        """
+        for qual in quals:
+            op = QUAL_OPERATOR_MAP.get(qual.operator)
+            if op is None:
+                log_to_postgres(
+                    'Unknown operator {} in the {} qual. Row will be returned.'.format(qual.operator, qual),
+                    WARNING,
+                    hint='Implement that operator in the ambryfdw wrapper.')
+                continue
+
+            elem_index = self.columns.index(qual.field_name)
+
+            if not op(row[elem_index], qual.value):
+                return False
+        return True
+
     def execute(self, quals, columns):
         # FIXME: Implement quals
         with open(self.filename) as stream:
@@ -109,4 +139,8 @@ class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
                 if not header:
                     header = row
                     continue
+
+                if not self._matches(quals, row):
+                    continue
+
                 yield row

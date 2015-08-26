@@ -11,6 +11,6 @@ setup(
     install_requires=[
         'msgpack-python'  # ==0.4.6
     ],
-    tests_require=['nose'],
+    tests_require=['nose', 'fudge'],
     test_suite='nose.collector',
     zip_safe=False)
