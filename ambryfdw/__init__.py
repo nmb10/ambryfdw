@@ -79,6 +79,7 @@ class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
     @staticmethod
     def decode_obj(obj):
         if b'__datetime__' in obj:
+            # FIXME: not tested
             try:
                 obj = datetime.strptime(obj['as_str'], '%Y-%m-%dT%H:%M:%S')
             except ValueError:
@@ -86,14 +87,18 @@ class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
                 # bundle that still have it.
                 obj = datetime.datetime.strptime(obj['as_str'], '%Y-%m-%dT%H:%M:%S.%f')
         elif b'__time__' in obj:
+            # FIXME: not tested
             obj = time(*list(time.strptime(obj['as_str'], '%H:%M:%S'))[3:6])
         elif b'__date__' in obj:
+            # FIXME: not tested
             obj = datetime.datetime.strptime(obj['as_str'], '%Y-%m-%d').date()
         else:
+            # FIXME: not tested
             raise Exception('Unknown type on decode: {} '.format(obj))
         return obj
 
     def execute(self, quals, columns):
+        # FIXME: Implement quals
         with open(self.filename) as stream:
             unpacker = msgpack.Unpacker(stream, object_hook=self.decode_obj)
             header = None
