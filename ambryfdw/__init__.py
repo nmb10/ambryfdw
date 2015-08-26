@@ -66,8 +66,8 @@ from multicorn.utils import log_to_postgres, ERROR, WARNING
 #    date and time formats listed here have to match to formats used in the
 #    ambry.etl.partition.PartitionMsgpackDataFileReader.decode_obj
 
-DATETIME_FORMAT_WITH_MS = '%Y-%m-%dT%H:%M:%S'
-DATETIME_FORMAT_NO_MS = '%Y-%m-%dT%H:%M:%S.%f'
+DATETIME_FORMAT_NO_MS = '%Y-%m-%dT%H:%M:%S'
+DATETIME_FORMAT_WITH_MS = '%Y-%m-%dT%H:%M:%S.%f'
 TIME_FORMAT = '%H:%M:%S'
 DATE_FORMAT = '%Y-%m-%d'
 
@@ -95,11 +95,11 @@ class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
         if b'__datetime__' in obj:
             # FIXME: not tested
             try:
-                obj = datetime.strptime(obj['as_str'], DATETIME_FORMAT_WITH_MS)
+                obj = datetime.strptime(obj['as_str'], DATETIME_FORMAT_NO_MS)
             except ValueError:
                 # The preferred format is without the microseconds, but there are some lingering
                 # bundle that still have it.
-                obj = datetime.datetime.strptime(obj['as_str'], DATETIME_FORMAT_NO_MS)
+                obj = datetime.datetime.strptime(obj['as_str'], DATETIME_FORMAT_WITH_MS)
         elif b'__time__' in obj:
             # FIXME: not tested
             obj = time(*list(time.strptime(obj['as_str'], TIME_FORMAT))[3:6])

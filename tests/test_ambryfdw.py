@@ -52,7 +52,7 @@ class TestAmbryFdw(TestCase):
         quals = [Qual('a', '?', 3)]
         list(wrapper.execute(quals, columns))
 
-    def test_returns_less_then_records(self):
+    def test_returns_less_than_records(self):
         options = {
             'filename': os.path.join(TEST_FILES_DIR, 'header_2_columns_100_rows_all_integers.msg')}
         columns = ['a', 'b']
@@ -64,7 +64,7 @@ class TestAmbryFdw(TestCase):
         self.assertEquals(ret[1], [1, 1])
         self.assertEquals(ret[2], [2, 2])
 
-    def test_returns_greater_then_records(self):
+    def test_returns_greater_than_records(self):
         options = {
             'filename': os.path.join(TEST_FILES_DIR, 'header_2_columns_100_rows_all_integers.msg')}
         columns = ['a', 'b']
