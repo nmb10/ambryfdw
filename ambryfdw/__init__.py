@@ -56,6 +56,7 @@ You can declare the following table:
 
 from datetime import datetime, time
 import operator
+import re
 
 import msgpack
 
@@ -71,9 +72,40 @@ DATETIME_FORMAT_WITH_MS = '%Y-%m-%dT%H:%M:%S.%f'
 TIME_FORMAT = '%H:%M:%S'
 DATE_FORMAT = '%Y-%m-%d'
 
+
+def like_op(a, b):
+    """ Returns True if 'a LIKE b'. """
+    # FIXME: Optimize
+    r_exp = b.replace('%', '.*').replace('_', '.{1}') + '$'
+    return bool(re.match(r_exp, a))
+
+
+def ilike_op(a, b):
+    """ Returns True if 'a ILIKE 'b. FIXME: is it really ILIKE? """
+    return like_op(a.lower(), b.lower())
+
+
+def not_like_op(a, b):
+    """ Returns True if 'a NOT LIKE b'. FIXME: is it really NOT? """
+    return not like_op(a, b)
+
+
+def not_ilike_op(a, b):
+    """ Returns True if 'a NOT LIKE b'. FIXME: is it really NOT? """
+    return not ilike_op(a, b)
+
+
 QUAL_OPERATOR_MAP = {
-    '>': operator.gt,
+    '=': operator.eq,
     '<': operator.lt,
+    '>': operator.gt,
+    '<=': operator.le,
+    '>=': operator.ge,
+    '<>': operator.ne,
+    '~~': like_op,
+    '~~*': ilike_op,
+    '!~~*': not_ilike_op,
+    '!~~': not_like_op,
 }
 
 
@@ -131,13 +163,11 @@ class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
                 continue
 
             elem_index = self.columns.index(qual.field_name)
-
             if not op(row[elem_index], qual.value):
                 return False
         return True
 
     def execute(self, quals, columns):
-        # FIXME: Implement quals
         with open(self.filename) as stream:
             unpacker = msgpack.Unpacker(stream, object_hook=self.decode_obj)
             header = None

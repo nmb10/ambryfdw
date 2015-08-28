@@ -52,7 +52,20 @@ class TestAmbryFdw(TestCase):
         quals = [Qual('a', '?', 3)]
         list(wrapper.execute(quals, columns))
 
-    def test_returns_less_than_records(self):
+    # quals tests
+    def test_equals_operator(self):
+        """ tests = operator. """
+        options = {
+            'filename': os.path.join(TEST_FILES_DIR, 'header_2_columns_100_rows_all_integers.msg')}
+        columns = ['a', 'b']
+        wrapper = PartitionMsgpackForeignDataWrapper(options, columns)
+        quals = [Qual('a', '=', 3)]
+        ret = list(wrapper.execute(quals, columns))
+        self.assertEquals(len(ret), 1)
+        self.assertEquals(ret[0], [3, 3])
+
+    def test_less_than_operator(self):
+        """ tests < operator. """
         options = {
             'filename': os.path.join(TEST_FILES_DIR, 'header_2_columns_100_rows_all_integers.msg')}
         columns = ['a', 'b']
@@ -64,7 +77,7 @@ class TestAmbryFdw(TestCase):
         self.assertEquals(ret[1], [1, 1])
         self.assertEquals(ret[2], [2, 2])
 
-    def test_returns_greater_than_records(self):
+    def test_greater_than_operator(self):
         options = {
             'filename': os.path.join(TEST_FILES_DIR, 'header_2_columns_100_rows_all_integers.msg')}
         columns = ['a', 'b']
@@ -75,5 +88,73 @@ class TestAmbryFdw(TestCase):
         self.assertEquals(ret[0], [11, 11])
         self.assertEquals(ret[1], [12, 12])
         self.assertEquals(ret[2], [13, 13])
+
+    def test_less_than_or_equal_operator(self):
+        """ tests <= operator. """
+        options = {
+            'filename': os.path.join(TEST_FILES_DIR, 'header_2_columns_100_rows_all_integers.msg')}
+        columns = ['a', 'b']
+        wrapper = PartitionMsgpackForeignDataWrapper(options, columns)
+        quals = [Qual('a', '<=', 1)]
+        ret = list(wrapper.execute(quals, columns))
+        self.assertEquals(len(ret), 2)
+        self.assertEquals(ret[0], [0, 0])
+        self.assertEquals(ret[1], [1, 1])
+
+    def test_greater_than_or_equal_operator(self):
+        """ tests >= operator. """
+        options = {
+            'filename': os.path.join(TEST_FILES_DIR, 'header_2_columns_100_rows_all_integers.msg')}
+        columns = ['a', 'b']
+        wrapper = PartitionMsgpackForeignDataWrapper(options, columns)
+        quals = [Qual('a', '>=', 98)]
+        ret = list(wrapper.execute(quals, columns))
+        self.assertEquals(len(ret), 2)
+        self.assertEquals(ret[0], [98, 98])
+        self.assertEquals(ret[1], [99, 99])
+
+    def test_not_equal_operator(self):
+        """ tests <> operator. """
+        options = {
+            'filename': os.path.join(TEST_FILES_DIR, 'header_2_columns_100_rows_all_integers.msg')}
+        columns = ['a', 'b']
+        wrapper = PartitionMsgpackForeignDataWrapper(options, columns)
+        quals = [Qual('a', '<>', 0)]
+        ret = list(wrapper.execute(quals, columns))
+        self.assertEquals(len(ret), 99)
+        self.assertEquals(ret[0], [1, 1])
+
+    def test_like_operator(self):
+        """ tests ~~ operator. """
+        options = {
+            'filename': os.path.join(TEST_FILES_DIR, 'header_2_columns_100_rows_all_strings.msg')}
+        columns = ['a', 'b']
+        wrapper = PartitionMsgpackForeignDataWrapper(options, columns)
+
+        quals = [Qual('a', '~~', '1')]
+        ret = list(wrapper.execute(quals, columns))
+        self.assertEquals(len(ret), 1)
+        self.assertEquals(ret[0], ['1', '1'])
+
+        quals = [Qual('a', '~~', '%1')]
+        ret = list(wrapper.execute(quals, columns))
+        self.assertEquals(len(ret), 10)
+        self.assertEquals(ret[0], ['1', '1'])
+        self.assertEquals(ret[1], ['11', '11'])
+        self.assertEquals(ret[-1], ['91', '91'])
+
+        quals = [Qual('a', '~~', '1%')]
+        ret = list(wrapper.execute(quals, columns))
+        self.assertEquals(len(ret), 11)
+        self.assertEquals(ret[0], ['1', '1'])
+        self.assertEquals(ret[1], ['10', '10'])
+        self.assertEquals(ret[-1], ['19', '19'])
+
+        quals = [Qual('a', '~~', '_')]
+        ret = list(wrapper.execute(quals, columns))
+        self.assertEquals(len(ret), 10)
+        self.assertEquals(ret[0], ['0', '0'])
+        self.assertEquals(ret[1], ['1', '1'])
+        self.assertEquals(ret[-1], ['9', '9'])
 
     # FIXME: Test date and time objects.
