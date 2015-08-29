@@ -5,6 +5,7 @@ setup(
     version='0.0.1',
     description='Ambry partitions msgpack files fdw.',
     url='https://github.com/nmb10/ambryfdw',
+    download_url='https://github.com/nmb10/ambryfdw/tarball/0.0.1',
     author='Kazbek Byasov',
     license='Postgresql',
     packages=['ambryfdw'],
