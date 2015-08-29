@@ -14,11 +14,12 @@ python setup.py test
 ```
 
 ## Options
-
+```
 filename (required)
-    The full path to the CSV file containing the data. This file must be readable to the postgres user.
+```
+The full path to the CSV file containing the data. This file must be readable to the postgres user.
 
-# Usage
+## Usage
 Supposing you want to parse the following msgpack partition file, located in ``/tmp/test.msg``::
 
     Year,Make,Model,Length
@@ -38,7 +39,9 @@ You can declare the following table:
            length numeric
     ) SERVER partition_srv OPTIONS (
            filename '/tmp/test.msg');
-
+```
+Now you can query ambry partition
+```sql
     SELECT * FROM partition_test;
 ```
 ```bash
