@@ -4,6 +4,14 @@ This FDW can be used to access data stored in the ambry partitions packed with m
 in the table will be mapped, in order, against columns in the ambry partition file.
 
 ## Installation.
+Install multicorn:
+```bash
+wget https://github.com/Kozea/Multicorn/archive/v1.2.3.zip
+unzip v1.2.3.zip
+cd Multicorn-1.2.3
+make && sudo make install
+```
+Install ambryfdw:
 ```bash
 pip install ambryfdw
 ```
