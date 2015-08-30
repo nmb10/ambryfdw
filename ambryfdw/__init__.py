@@ -14,13 +14,13 @@ Options
 ----------------
 
 ``filename`` (required)
-  The full path to the CSV file containing the data. This file must be readable
+  The full path to the gzipped msg file containing the data. This file must be readable
   to the postgres user.
 
 Usage example
 -------------
 
-Supposing you want to parse the following msgpack partition file, located in ``/tmp/test.msg``::
+Supposing you want to parse the following gzipped msgpack partition file, located in ``/tmp/test.msg``::
 
     Year,Make,Model,Length
     1997,Ford,E350,2.34
@@ -54,6 +54,7 @@ You can declare the following table:
 
 """
 
+from gzip import GzipFile
 from datetime import datetime, time
 import operator
 import re
@@ -131,13 +132,13 @@ class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
             except ValueError:
                 # The preferred format is without the microseconds, but there are some lingering
                 # bundle that still have it.
-                obj = datetime.datetime.strptime(obj['as_str'], DATETIME_FORMAT_WITH_MS)
+                obj = datetime.strptime(obj['as_str'], DATETIME_FORMAT_WITH_MS)
         elif b'__time__' in obj:
             # FIXME: not tested
             obj = time(*list(time.strptime(obj['as_str'], TIME_FORMAT))[3:6])
         elif b'__date__' in obj:
             # FIXME: not tested
-            obj = datetime.datetime.strptime(obj['as_str'], DATE_FORMAT).date()
+            obj = datetime.strptime(obj['as_str'], DATE_FORMAT).date()
         else:
             # FIXME: not tested
             raise Exception('Unknown type on decode: {} '.format(obj))
@@ -169,7 +170,7 @@ class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
 
     def execute(self, quals, columns):
         with open(self.filename) as stream:
-            unpacker = msgpack.Unpacker(stream, object_hook=self.decode_obj)
+            unpacker = msgpack.Unpacker(GzipFile(fileobj=stream), object_hook=self.decode_obj)
             header = None
 
             for row in unpacker:
