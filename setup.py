@@ -2,10 +2,10 @@ from setuptools import setup
 
 setup(
     name='ambryfdw',
-    version='0.0.2',
+    version='0.0.3',
     description='Ambry partitions msgpack files Foreign Data Wrapper (postgresql, multicorn).',
     url='https://github.com/nmb10/ambryfdw',
-    download_url='https://github.com/nmb10/ambryfdw/tarball/0.0.2',
+    download_url='https://github.com/nmb10/ambryfdw/tarball/0.0.3',
     keywords=['ambry', 'fdw', 'ambry msgpack'],
     author='Kazbek Byasov',
     license='Postgresql',
