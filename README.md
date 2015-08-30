@@ -25,7 +25,7 @@ python setup.py test
 ```
 filename (required)
 ```
-The full path to the CSV file containing the data. This file must be readable to the postgres user.
+The full path to the gzipped partition file containing the data in msgpack format. This file must be readable to the postgres user.
 
 ## Usage
 Supposing you want to parse the following msgpack partition file, located in ``/tmp/test.msg``::
