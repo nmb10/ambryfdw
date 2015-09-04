@@ -169,7 +169,7 @@ class PartitionMsgpackForeignDataWrapper(ForeignDataWrapper):
         return True
 
     def execute(self, quals, columns):
-        with open(self.filename) as stream:
+        with open(self.filename, 'rb') as stream:
             unpacker = msgpack.Unpacker(GzipFile(fileobj=stream), object_hook=self.decode_obj)
             header = None
 
