@@ -1,3 +1,4 @@
+# DEPRECATED: Merged into [ambry_sources](https://github.com/CivicKnowledge/ambry_sources) . Also it is broken because format of the packed partition files changed.
 # Ambry partition msgpack files Foreign Data Wrapper (multicorn)
 
 This FDW can be used to access data stored in the ambry partitions packed with msgpack. Each column defined
